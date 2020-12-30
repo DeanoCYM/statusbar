@@ -1,0 +1,12 @@
+[Unit]
+Description=statusbar
+Wants=pulseaudio.service
+Requires=pulseaudio.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/statusbar
+
+[Install]
+WantedBy=xsession.target
