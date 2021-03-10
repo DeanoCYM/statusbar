@@ -197,15 +197,13 @@ set_mainloopbreak(int signum)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
     struct sigaction mainloop_handler;
     struct tm       *loctime;
     Display         *x11d;
     Audio           *pulse;
     char            *vol, *bat, *tim, *sstr;
-
-    (void)argc; (void)argv;
 
     mainloop_handler.sa_handler = set_mainloopbreak;
     mainloop_handler.sa_flags = 0;
