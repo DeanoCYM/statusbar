@@ -23,7 +23,7 @@ A systemd service file is provided, it will wait for x11 to be open
 then launches the program, automatically stopping it when x11
 closes. 
 
-$ cp {statusbar,xsession}.service /etc/xdg/systemd/user/
+$ cp {statusbar,xsession}.service $HOME/.config/systemd/user
 
 To set up an x11 target copy the following to your .xinitrc
 
