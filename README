@@ -1,0 +1,41 @@
+This is a status bar for dwm. It works by setting the root window name
+in X11 to a string constructed from system information. It is specific
+to my set up (pulseaudio, battery etc.) but can be easily customised. 
+
+Usage:
+
+To compile and run debug build that will only print to stdout.
+
+$ make
+$ ./statusbar
+
+To compile and run a build that will update the dwm status area
+
+$ make build
+$ ./statusbar
+
+To compile, install to system and run.
+
+$ sudo make install
+$ /usr/local/bin/statusbar
+
+A systemd service file is provided, it will wait for x11 to be open
+then launches the program, automatically stopping it when x11
+closes. 
+
+$ cp {statusbar,xsession}.service /etc/xdg/systemd/user/
+
+To set up an x11 target copy the following to your .xinitrc
+
+# systemd hook (used to launch scripts instead of this file)
+# unit files can be found in $HOME/.config/systemd/user/
+systemctl --user import-environment PATH DBUS_SESSION_BUS_ADDRESS DISPLAY
+systemctl --no-block --user start xsession.target
+
+Finally, install and enable autostart with:
+
+systemctl --user start statusbar.service
+systemctl --user enable statusbar.service
+
+
+
