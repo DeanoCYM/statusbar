@@ -16,24 +16,27 @@
 #include "audio.h"
 #include "misc.h"
 
-#define SYS_LMAX        512
+/* mainloopbreak: event loop condition in main proceedure. */
+volatile sig_atomic_t mainloopbreak;
+void set_mainloopbreak(int signum);
 
-/*
-  Forward Declarations
-*/
+/* sysfs: reading kernel entries in the system file system */
+#define SYS_LMAX        512
 char *sysfs_getline(const char *root, const char *file);
 unsigned long sysfs_getul(const char *root, const char *file);
 
+/* mk: string creation proceedures */
 char *mkbat(const char *syspath);
 char *mkvol(Audio *pulse);
 char *mktim(const struct tm *loctime);
 	      
-void    update_time(struct tm **out);
+/* x11: control the display */
 Display *x11open(void);
 void    x11print(Display *x11d, const char *str);
 void    x11close(Display *toclose);
 
-volatile sig_atomic_t mainloopbreak;
+/* misc */
+void    update_time(struct tm **out);
 
 char *
 sysfs_getline(const char *root, const char *file)
@@ -184,12 +187,14 @@ x11print(Display *x11d, const char *str)
 }
 
 void
-x11close(Display *toclose)
+x11close
+(Display *toclose)
 {
     XCloseDisplay(toclose);
 }
 
-/* sets the global to the signal number */
+/* set_mainloopbreak(): when signal number is non-zero this proceedure
+   breaks the event loop in main. */
 void
 set_mainloopbreak(int signum)
 {
