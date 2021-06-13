@@ -1,10 +1,9 @@
+
 /* This file is part of statusbar - a status bar for dwm
    Copyright (C) 2020  Ellis Rhys Thomas <e.rhys.thomas@gmail.com>
    See COPYING for licence details. */
 
-
 /* statusbar configuration file */
-
 
 /* Paths to devices in sysfs, arrays must be null terminated. */
 const char *sysfs_batt =  "/sys/class/power_supply/BAT0";
@@ -16,6 +15,13 @@ const char *sysfs_networks[] = {
 /* Sets the format of the date and time. See man 3 strftime. */
 #define DATE_FORMAT      "%d/%m/%y %H:%M"
 
+/* Pulse audio sinks */
+const char sink_icons[2][] = {
+    "usb",      "USB",
+    "pci",      "PCI",
+    "default",  "PCI"
+};
+    
 /* State symbols */
 const char *symbol_speakers   = "🔈";
 const char *symbol_jack       = "➰";

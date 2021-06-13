@@ -116,34 +116,31 @@ mkbat(const char *syspath)
     return smprintf("%s%u%%", symbol, full==0 ? 0L : (100L*now)/full);
 }
 
+/* mkvol(): create string with audio sink volume % and an icon to
+   represent the type. */
 char *
 mkvol(Audio *server)
 {
-    const char *symbol;
-    char *sinkname, *portname;
+    char *s, *sinkname, *portname;
     unsigned volume;
 
     sinkname = audio_get_sink_name(server);
     portname = audio_get_port_name(server, sinkname);
     volume   = audio_get_volume(server, sinkname);
 
-    if (audio_is_mute(server, sinkname)) 
-	symbol = symbol_mute;
-    else if (strstr(portname, "headphones")) 
-	symbol = symbol_jack;
-    else if (strstr(portname, "speaker"))
-	symbol = symbol_speakers;
-    else if (strstr(portname, "headset"))
-	symbol = symbol_bt;
-    else 
-	symbol = symbol_unknown;
+    fprintf(stderr, "portname = \"%s\"\n", portname); 
+    fprintf(stderr, "sinkname = \"%s\"\n", sinkname); 
+
+    s = smprintf("%s%u%%", lookup(sinks, sinkname), lookup(ports, portname)
+		 volume);
 
     free(sinkname);
     free(portname);
     
-    return smprintf("%s%u%%", symbol, volume);
+    return ;
 }
 
+/* mktime(): create a string with date and time */
 char *
 mktim(const struct tm *loctime)
 {
@@ -161,6 +158,8 @@ mktim(const struct tm *loctime)
 /*
   X11 functions
  */
+
+/* x11open(): connect to display server */
 Display *
 x11open(void)
 {
@@ -173,7 +172,7 @@ x11open(void)
     return new;
 }
 
-/* Push the status string to the X11 output buffer and update */
+/* x11print(): push a string to the display server. */
 void
 x11print(Display *x11d, const char *str)
 {
@@ -186,6 +185,7 @@ x11print(Display *x11d, const char *str)
 #endif
 }
 
+/* x11close(): close the connection to the display server. */
 void
 x11close
 (Display *toclose)
@@ -201,8 +201,19 @@ set_mainloopbreak(int signum)
     mainloopbreak = signum;
 }
 
-int
-main(void)
+/* geticon(): returns a icon string from a table using a string */
+const char *
+geticon(const char **table, const char *s)
+{
+    
+
+
+
+
+}
+
+/* statusbar: updates the root window name in x11. */
+int main(void)
 {
     struct sigaction mainloop_handler;
     struct tm       *loctime;

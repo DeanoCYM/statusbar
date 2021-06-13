@@ -30,6 +30,7 @@ static void sink_activeportname_cb(pa_context *c, const pa_sink_info *i, int eol
 static void sink_volume_cb(pa_context *c, const pa_sink_info *i, int eol, void *userdata);
 static void sink_ismute_cb(pa_context *c, const pa_sink_info *i, int eol, void *userdata);
 
+
 /* Creates a PulseAudio context and returns an opaque handle */
 struct server_connection *
 audio_server_open(void)
@@ -159,6 +160,7 @@ pulseaudio_server_connect(struct server_connection *pulseaudio)
     return pulseaudio_mainloop_state(pulseaudio, &state);
 }
 
+/* pulseaudio_server_disconnect():  */
 static void
 pulseaudio_server_disconnect(struct server_connection *pulseaudio)
 {
@@ -179,12 +181,13 @@ pulseaudio_server_disconnect(struct server_connection *pulseaudio)
     }
 }
 
-/* Recurses until connected (0) or failed (1) is returned */
+/* pulseaudio_mainloop_state(): Recurses until operation complete (0)
+   or failed (1) is returned */
 static int
 pulseaudio_mainloop_state(struct server_connection *pulseaudio, enum pa_context_state *state)
 {
     switch (*state) {
-    case PA_CONTEXT_UNCONNECTED: 	
+    case PA_CONTEXT_UNCONNECTED:
     case PA_CONTEXT_CONNECTING: 	
     case PA_CONTEXT_AUTHORIZING: 	
     case PA_CONTEXT_SETTING_NAME: 	
@@ -200,7 +203,8 @@ pulseaudio_mainloop_state(struct server_connection *pulseaudio, enum pa_context_
     return pulseaudio_mainloop_state(pulseaudio, state);
 }
 
-/* Recurses until operation complete (0) or failed (1) is returned */
+/* pulseaudio_operation_state(): Recurses until operation complete (0)
+   or failed (1) is returned */
 static int
 pulseaudio_operation_state(struct server_connection *pulseaudio, pa_operation *id)
 {
@@ -210,7 +214,7 @@ pulseaudio_operation_state(struct server_connection *pulseaudio, pa_operation *i
 	break;
     case PA_OPERATION_DONE:
 	return 0;
-    case PA_OPERATION_CANCELLED:
+    case PA_OPERATION_CANCELLED: /* failure case */
 	return 1;
     }
     
@@ -221,8 +225,8 @@ pulseaudio_operation_state(struct server_connection *pulseaudio, pa_operation *i
   PulseAudio mainloop callbacks.
 */
 
-/* Returns a STATE enumeration, describing the state of context
-   registration. */
+/* mainloop_state_cb(): populates userdata with a STATE enumeration,
+   describing the state of context registration. */
 static void
 mainloop_state_cb(pa_context *c, void *userdata)
 {
@@ -230,13 +234,11 @@ mainloop_state_cb(pa_context *c, void *userdata)
 
     assert(c);
     state = userdata;
-    if (c)
-	*state = pa_context_get_state(c);
-    else
-	*state =  PA_CONTEXT_FAILED;
+    *state = c ? pa_context_get_state(c) : PA_CONTEXT_FAILED;
 }
 
-/* Populates userdata with the name of the server's default sink */
+/* default_sink_name_cb(): populates userdata with the name of the
+   server's default sink */
 static void
 default_sink_name_cb(__attribute__((unused)) pa_context *c, const pa_server_info*i, void *userdata)
 {
@@ -244,12 +246,11 @@ default_sink_name_cb(__attribute__((unused)) pa_context *c, const pa_server_info
 
     assert(c);
     name = userdata;
-    if (i)
-	strcpy(name, i->default_sink_name);
-    else
-	strcpy(name, "error");
+    strcpy(name, i ? i->default_sink_name : "error");
 }
 
+/* sink_activeportname_cb(): populates userdata with the name of the
+   active port */
 static void
 sink_activeportname_cb(__attribute__((unused)) pa_context *c, const pa_sink_info *i, int eol, void *userdata)
 {
@@ -260,12 +261,11 @@ sink_activeportname_cb(__attribute__((unused)) pa_context *c, const pa_sink_info
 
     assert(c);
     name = userdata;
-    if (i)
-	strcpy(name, i->active_port->name);
-    else
-	strcpy(name, "error");
+    strcpy(name, i ? i->active_port->name : "error");
 }
 
+/* sink_volume_cb(): populate userdata with the integer average volume
+   of the sink in percent. */
 static void
 sink_volume_cb(__attribute__((unused)) pa_context *c, const pa_sink_info *i, int eol, void *userdata)
 {
@@ -276,12 +276,11 @@ sink_volume_cb(__attribute__((unused)) pa_context *c, const pa_sink_info *i, int
 
     assert(c);
     vol = userdata;
-    if (i)
-	*vol = 100*pa_cvolume_avg(&i->volume) / PA_VOLUME_NORM;
-    else
-	*vol = 0;
+    *vol = i ? 100*pa_cvolume_avg(&i->volume) / PA_VOLUME_NORM : 0;
 }
 
+/* sink_ismute_cb(): populate userdata with 0, 1 or 2 if the mute is
+   active, inactive or error respectively. */
 static void
 sink_ismute_cb(__attribute__((unused)) pa_context *c, const pa_sink_info *i, int eol, void *userdata)
 {
@@ -292,9 +291,6 @@ sink_ismute_cb(__attribute__((unused)) pa_context *c, const pa_sink_info *i, int
 
     assert(c);
     ismute = userdata;
-    if (i)
-	*ismute = i->mute;
-    else
-	*ismute = 2;
+    *ismute = i ? i->mute : 2;
 }
 
